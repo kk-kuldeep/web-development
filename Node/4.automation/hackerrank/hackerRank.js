@@ -1,3 +1,4 @@
+const { resolve } = require("path");
 const puppeteer = require("puppeteer");
 //let { email, password } = require('./secrets');
  let email = "ks13bro@gmail.com";
@@ -36,13 +37,13 @@ browserOpenPromise //fulfill
     // console.log(data);
     console.log("Hackerrank login page opened");
     //selector(where to type), data(what to type)
-    let emailWillBeTypedPromise = curTab.type("input[name='username']", email,{delay:10});
+    let emailWillBeTypedPromise = curTab.type("#input-1", email,{delay:10});
     return emailWillBeTypedPromise;
   })
   .then(function () {
     console.log("email is typed");
     let passwordWillBeTypedPromise = curTab.type(
-      "input[type='password']",
+      "#input-2",
       password,{delay:10}
     );
     return passwordWillBeTypedPromise;
@@ -54,5 +55,36 @@ browserOpenPromise //fulfill
   })
   .then(function(){
     console.log("Login Done");
+    let algorithmTab = clickAndWait(
+      "div[data-automation='algorithms']"
+    );
+    return algorithmTab;
   })
-  
+  .then(function(){
+    console.log("algorithm tab openend");
+  })
+  .catch(function(err)
+  {
+    console.log(err);
+  });
+
+  function clickAndWait(selector)
+  {
+    let mypromise = new Promise(function(resolve,reject)
+    {
+        let waitForSelectorPromise = curTab.waitForSelector(selector);
+        waitForSelectorPromise
+        .then(function(){
+          let clickPromise = curTab.click(selector);
+          return clickPromise;
+        })
+        .then(function(){
+          resolve();
+        })
+        .catch(function(err){
+          console.log(err);
+        })
+    }
+    );
+    return mypromise;
+  }
