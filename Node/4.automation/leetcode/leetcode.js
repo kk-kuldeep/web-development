@@ -28,34 +28,84 @@ browserOpenPromise //fulfill
     console.log("new tab");
     //URL to navigate page to
     let visitingLoginPagePromise = curTab.goto(
-      "https://leetcode.com/accounts/login/"
+      "https://leetcode.com/accounts/login/?next=/problemset/all/"
     );
     return visitingLoginPagePromise;
   })
   .then(function (data) {
     // console.log(data);
-    console.log("Hackerrank login page opened");
+    console.log("leetcode login page opened");
     //selector(where to type), data(what to type)
-    let emailWillBeTypedPromise = curTab.type("input[name='login']", email,{delay:10});
+    let emailWillBeTypedPromise = curTab.type("input[name='login']", email,{delay:100});
     return emailWillBeTypedPromise;
   })
   .then(function () {
     console.log("email is typed");
     let passwordWillBeTypedPromise = curTab.type(
       "input[name='password']",
-      password,{delay:10}
+      password,{delay:100}
     );
     return passwordWillBeTypedPromise;
   })
   .then(function(){
     console.log("password written");
-    let loginWindow = curTab.click(".btn-content-container__2HVS>.btn-content__2V4r");
+    let loginWindow = clickAndWait(".btn-content-container__2HVS>.btn-content__2V4r");
     return loginWindow;
   })
   .then(function(){
     console.log("Login Done");
+    
+  })
+ 
+  .then(function(){
+    console.log("problem tab openend");
+    let allQuesPromise = curTab.waitForSelector(
+      "a[class='h-5 hover:text-primary-s dark:hover:text-dark-primary-s']"
+    );
+    return allQuesPromise;
+  })
+  .then(function () {
+    function getAllQuesLinks() {
+      let allElemArr = document.querySelectorAll(
+        "a[class='h-5 hover:text-primary-s dark:hover:text-dark-primary-s']"
+      );
+      let linksArr = [];
+      for (let i = 0; i < allElemArr.length; i++) {
+        linksArr.push(allElemArr[i].getAttribute("href"));
+        //console.log(linksArr[i]);
+      }
+      
+      return linksArr;
+    }
+    let linksArrPromise = curTab.evaluate(getAllQuesLinks);
+    return linksArrPromise;
+  })
+  .then(function (linksArr) {
+    console.log("links to all ques received");
+     console.log(linksArr);
+    
   })
   .catch(function(err)
   {
     console.log(err);
   });
+  function clickAndWait(selector)
+  {
+    let mypromise = new Promise(function(resolve,reject)
+    {
+        let waitForSelectorPromise = curTab.waitForSelector(selector);
+        waitForSelectorPromise
+        .then(function(){
+          let clickPromise = curTab.click(selector);
+          return clickPromise;
+        })
+        .then(function(){
+          resolve();
+        })
+        .catch(function(err){
+          console.log(err);
+        })
+    }
+    );
+    return mypromise;
+  }
