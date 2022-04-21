@@ -8,7 +8,7 @@ let curTab;
 let browserOpenPromise = puppeteer.launch({
   headless: false, 
   defaultViewport: null,
-  args: ["--start-maximized"]
+ // args: ["--start-maximized"]
   //chrome://version/
   // executablePath:
   //   "//Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -62,12 +62,38 @@ browserOpenPromise //fulfill
   })
   .then(function(){
     console.log("algorithm tab openend");
+    let allQuesPromise = curTab.waitForSelector(
+      'a[data-analytics="ChallengeListChallengeName"]'
+    );
+    return allQuesPromise;
   })
-  .catch(function(err)
-  {
+  .then(function () {
+    function getAllQuesLinks() {
+      let allElemArr = document.querySelectorAll(
+        'a[data-analytics="ChallengeListChallengeName"]'
+      );
+      let linksArr = [];
+      for (let i = 0; i < allElemArr.length; i++) {
+        linksArr.push(allElemArr[i].getAttribute("href"));
+        //console.log(linksArr[i]);
+      }
+      
+      return linksArr;
+    }
+    let linksArrPromise = curTab.evaluate(getAllQuesLinks);
+    return linksArrPromise;
+  })
+  .then(function (linksArr) {
+    console.log("links to all ques received");
+     console.log(linksArr);
+    
+  })
+  // then(function () {
+  //   console.log("question is solved");
+  // })
+  .catch(function (err) {
     console.log(err);
   });
-
   function clickAndWait(selector)
   {
     let mypromise = new Promise(function(resolve,reject)
